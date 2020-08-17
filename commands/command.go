@@ -24,6 +24,7 @@ type Options struct {
 
 	API     apiCmd     `cli:"api"`
 	Login   loginCmd   `cli:"login"`
+	Paths   pathsCmd   `cli:"paths"`
 	Version versionCmd `cli:"version"`
 	Help    helpCmd    `cli:"help"`
 }

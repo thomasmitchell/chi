@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/credhub-cli/credhub"
+	"code.cloudfoundry.org/credhub-cli/credhub/auth"
 	"github.com/jhunt/go-ansi"
 	"github.com/jhunt/go-cli"
 	"github.com/thomasmitchell/chi/commands"
@@ -67,6 +68,11 @@ func main() {
 			config.Current().Address,
 			credhub.SetHttpTimeout(&clientTimeout),
 			credhub.SkipTLSValidation(config.Current().SkipVerify),
+			credhub.Auth(auth.Uaa("credhub_cli", "", "", "",
+				config.Current().AccessToken,
+				config.Current().RefreshToken,
+				false),
+			),
 		)
 		if err != nil {
 			bailWith("Error creating Credhub client: %s", err)
