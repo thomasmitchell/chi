@@ -43,36 +43,36 @@ func (a *apiCmd) ParseArgs(args []string) error {
 func (a *apiCmd) Run(ctx Context) error {
 	if a.Name != "" {
 		if a.URL != "" {
-			//Set Existing
-			err := ctx.Conf.SetCurrent(a.Name)
-			if err != nil {
-				return fmt.Errorf("Error setting API: %s", err.Error())
-			}
-			ctx.Conf.Save()
-		} else {
 			//Create New
 			err := a.createNewAPI(ctx.Conf)
 			if err != nil {
 				return fmt.Errorf("Error creating new API: %s", err.Error())
 			}
 			ctx.Conf.Save()
+		} else {
+			//Set Existing
+			err := ctx.Conf.SetCurrent(a.Name)
+			if err != nil {
+				return fmt.Errorf("Error setting API: %s", err.Error())
+			}
+			ctx.Conf.Save()
 		}
 	}
 
-	a.displayAPI(ctx.Conf.Current())
-	return nil
+	return a.displayAPI(ctx.Conf.Current())
 }
 
-func (a *apiCmd) displayAPI(target *rc.Target) {
+func (a *apiCmd) displayAPI(target *rc.Target) error {
 	if target == nil {
-		ansi.Printf("@R{You are not currently targeting a CredHub instance}")
-		return
+		return fmt.Errorf("You are not currently targeting a CredHub instance")
 	}
 
 	ansi.Printf("Currently targeting @C{%s} at @C{%s}\n", target.Name, target.Address)
 	if target.SkipVerify {
 		ansi.Printf("\t@R{Skipping certificate validation}\n")
 	}
+
+	return nil
 }
 
 func (a *apiCmd) createNewAPI(conf *rc.Config) error {

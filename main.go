@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
+	"code.cloudfoundry.org/credhub-cli/credhub"
 	"github.com/jhunt/go-ansi"
 	"github.com/jhunt/go-cli"
 	"github.com/thomasmitchell/chi/commands"
@@ -27,6 +29,9 @@ func main() {
 	}
 
 	if command == "" {
+		if len(args) > 0 {
+			ansi.Fprintf(os.Stderr, "@R{unrecognized command `%s`}\n\n", args[0])
+		}
 		commands.ShowGlobalHelp()
 		os.Exit(1)
 	}
@@ -46,8 +51,31 @@ func main() {
 		}
 	}
 
+	var client *credhub.CredHub
+	if cmd.RequiresClient() {
+		if !cmd.RequiresConfig() {
+			panic("Command requires CredHub client but no config")
+		}
+
+		if config.Current() == nil {
+			bailWith("You are not currently targeting a CredHub. Create or select one with `chi api'")
+		}
+
+		var clientTimeout = 30 * time.Second
+
+		client, err = credhub.New(
+			config.Current().Address,
+			credhub.SetHttpTimeout(&clientTimeout),
+			credhub.SkipTLSValidation(config.Current().SkipVerify),
+		)
+		if err != nil {
+			bailWith("Error creating Credhub client: %s", err)
+		}
+	}
+
 	err = cmd.Run(commands.Context{
-		Conf: config,
+		Conf:   config,
+		Client: client,
 	}, args)
 	if err != nil {
 		bailWith(err.Error())
@@ -55,6 +83,6 @@ func main() {
 }
 
 func bailWith(format string, args ...interface{}) {
-	ansi.Fprintf(os.Stderr, "@R{!! "+format+"}", args...)
+	ansi.Fprintf(os.Stderr, "@R{!! "+format+"}\n", args...)
 	os.Exit(1)
 }

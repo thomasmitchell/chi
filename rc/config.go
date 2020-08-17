@@ -44,9 +44,9 @@ func (c *Config) Add(target Target) error {
 }
 
 func (c Config) Find(name string) *Target {
-	for _, target := range c.targets {
+	for i, target := range c.targets {
 		if target.Name == name {
-			return &target
+			return &(c.targets[i])
 		}
 	}
 
@@ -64,10 +64,11 @@ func (c *Config) Delete(name string) {
 }
 
 type Target struct {
-	Name       string `yaml:"name"`
-	Address    string `yaml:"address"`
-	Token      string `yaml:"token"`
-	SkipVerify bool   `yaml:"skip_verify,omitempty"`
+	Name         string `yaml:"name"`
+	Address      string `yaml:"address"`
+	AccessToken  string `yaml:"access_token,omitempty"`
+	RefreshToken string `yaml:"refresh_token,omitempty"`
+	SkipVerify   bool   `yaml:"skip_verify,omitempty"`
 }
 
 func Load(path string) (*Config, error) {

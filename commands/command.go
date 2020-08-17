@@ -23,6 +23,7 @@ type Options struct {
 	VersionFlag bool `cli:"-v, --version"`
 
 	API     apiCmd     `cli:"api"`
+	Login   loginCmd   `cli:"login"`
 	Version versionCmd `cli:"version"`
 	Help    helpCmd    `cli:"help"`
 }
@@ -67,7 +68,8 @@ type cmd interface {
 
 //DISPATCHER
 type Dispatcher struct {
-	cmdMap map[string]*Command
+	cmdMap  map[string]*Command
+	aliases map[string]*Command
 }
 
 var Dispatch = &Dispatcher{
@@ -79,10 +81,22 @@ func (d *Dispatcher) register(name string, c Command) {
 	d.cmdMap[name] = &c
 }
 
+func (d *Dispatcher) alias(name, aliasFor string) {
+	cmd, err := d.Lookup(aliasFor)
+	if err != nil {
+		panic(fmt.Sprintf("attempting to alias for unknown command: `%s'", aliasFor))
+	}
+
+	d.aliases[name] = cmd
+}
+
 func (d *Dispatcher) Lookup(name string) (*Command, error) {
 	ret := d.cmdMap[name]
 	if ret == nil {
-		return nil, fmt.Errorf("Unknown command: %s", name)
+		ret = d.aliases[name]
+		if ret == nil {
+			return nil, fmt.Errorf("Unknown command: %s", name)
+		}
 	}
 	return ret, nil
 }

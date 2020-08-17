@@ -53,7 +53,7 @@ func ShowGlobalHelp() {
 		}
 	}
 
-	ansi.Fprintf(os.Stderr, "@R{chi} - An alternative CredHub clI\n\n")
+	ansi.Fprintf(os.Stderr, "@R{chi} - An alternative CredHub Interface\n\n")
 	//Num spaces to put between the longest command name and its description
 	const minIndent = 2
 	for _, command := range commands {
