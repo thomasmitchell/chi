@@ -13,3 +13,13 @@ func CanonizePathForAPI(path string) string {
 func CanonizePathForOutput(path string) string {
 	return strings.TrimPrefix(path, "/")
 }
+
+const (
+	CredTypeValue       = "value"
+	CredTypeUser        = "user"
+	CredTypePassword    = "password"
+	CredTypeCertificate = "certificate"
+	CredTypeRSA         = "rsa"
+	CredTypeSSH         = "ssh"
+	CredTypeJSON        = "json"
+)

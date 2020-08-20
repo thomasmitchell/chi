@@ -21,10 +21,7 @@ func main() {
 		bailWith(err.Error())
 	}
 
-	if commands.Opts.VersionFlag {
-		args = nil
-		command = "version"
-	} else if commands.Opts.HelpFlag {
+	if commands.Opts.HelpFlag {
 		args = []string{command}
 		command = "help"
 	}

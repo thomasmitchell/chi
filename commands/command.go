@@ -19,14 +19,14 @@ type Context struct {
 
 //FLAGS
 type Options struct {
-	HelpFlag    bool `cli:"-h, --help"`
-	VersionFlag bool `cli:"-v, --version"`
+	HelpFlag bool `cli:"-h, --help"`
 
 	API     apiCmd     `cli:"api"`
+	Get     getCmd     `cli:"get"`
 	Login   loginCmd   `cli:"login"`
+	Help    helpCmd    `cli:"help"`
 	Paths   pathsCmd   `cli:"paths"`
 	Version versionCmd `cli:"version"`
-	Help    helpCmd    `cli:"help"`
 }
 
 var Opts = Options{}
