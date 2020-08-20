@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/thomasmitchell/chi/commands/internal"
 	"gopkg.in/yaml.v2"
@@ -10,6 +11,7 @@ import (
 
 type getCmd struct {
 	Path    string
+	Subpath internal.Subpath
 	Verbose bool `cli:"-v, --verbose"`
 }
 
@@ -17,7 +19,7 @@ func init() {
 	Opts.Get = getCmd{}
 	Dispatch.register("get", Command{
 		c:     &Opts.Get,
-		usage: "get <path>",
+		usage: "get <path>[:<subpath>]",
 		short: "Get the value of a secret",
 	})
 }
@@ -27,9 +29,11 @@ func (p *getCmd) ParseArgs(args []string) error {
 		return err
 	}
 
-	p.Path = "/"
-	if len(args) > 0 {
-		p.Path = internal.CanonizePathForAPI(args[0])
+	path, subpath := internal.SplitPath(args[0])
+	p.Path = internal.CanonizePathForAPI(path)
+	p.Subpath = internal.NewSubpath(subpath)
+	if !p.Verbose {
+		p.Subpath = internal.NewSubpath(strings.Join([]string{"value", string(p.Subpath)}, "."))
 	}
 
 	return nil
@@ -41,13 +45,23 @@ func (p *getCmd) Run(ctx Context) error {
 		return fmt.Errorf("Error fetching secret: %s", err.Error())
 	}
 
-	var toEncode interface{} = cred
-
-	if !p.Verbose {
-		toEncode = cred.Value
+	secret, err := internal.NewSecretFromCredential(cred)
+	if err != nil {
+		return fmt.Errorf("Error parsing secret: %s", err.Error())
 	}
-	fmt.Printf("--- # %s\n", internal.CanonizePathForOutput(p.Path))
-	enc := yaml.NewEncoder(os.Stdout)
-	err = enc.Encode(toEncode)
+
+	toEncode, err := secret.GetSubpath(p.Subpath)
+	if err != nil {
+		return fmt.Errorf("Error filtering to subpath: %s", err.Error())
+	}
+
+	switch v := toEncode.(type) {
+	case string, float64, bool:
+		fmt.Printf("%+v\n", v)
+	default:
+		enc := yaml.NewEncoder(os.Stdout)
+		err = enc.Encode(toEncode)
+	}
+
 	return err
 }
