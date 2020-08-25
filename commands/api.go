@@ -48,15 +48,14 @@ func (a *apiCmd) Run(ctx Context) error {
 			if err != nil {
 				return fmt.Errorf("Error creating new API: %s", err.Error())
 			}
-			ctx.Conf.Save()
-		} else {
-			//Set Existing
-			err := ctx.Conf.SetCurrent(a.Name)
-			if err != nil {
-				return fmt.Errorf("Error setting API: %s", err.Error())
-			}
-			ctx.Conf.Save()
 		}
+
+		//Set Existing
+		err := ctx.Conf.SetCurrent(a.Name)
+		if err != nil {
+			return fmt.Errorf("Error setting API: %s", err.Error())
+		}
+		ctx.Conf.Save()
 	}
 
 	return a.displayAPI(ctx.Conf.Current())
